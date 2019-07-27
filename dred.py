@@ -32,6 +32,37 @@ def decox(m, flag=False):
 
 
 class DimReduce:
+    """Decorator for dimension reduce
+
+    Usage:
+    @SVDDimReduce(p, q)
+    class cls(egressorMixin):
+        Definition of cls, in sklearn form
+    
+    Example:
+    @SVDDimReduce(p, q)
+    class cls(RegressorMixin):
+        '''Linear Regressor
+        X P = y
+        '''
+
+        def fit(self, X, y):
+            self.P = LA.lstsq(X, y, rcond=None)[0]
+
+        def error(self, X, y):
+            return error(self.predict(X), y)
+
+        def relerror(self, X, y):
+            return relerror(self.predict(X), y)
+
+        def transform(self, X):
+            return X @ self.P
+
+        def predict(self, X):
+            return X @ self.P
+
+    """
+
     def __init__(self, dr1, args1, dr2=None, args2=None):
         self.dr1 = dr1
         self.args1 = args1
@@ -48,6 +79,7 @@ class DimReduce:
 
 
 class SVDDimReduce(DimReduce):
+    # SVD for X and y
     def __init__(self, p=3, q=None):
         def svd(X, p):
             V, s, Vh = LA.svd(X.T @ X)
