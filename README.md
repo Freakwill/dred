@@ -15,7 +15,7 @@ class cls(RegressorMixin):
 
 ## Example
 see `solver.py`
-
+run `lineqx.py`
 
 ## TODO
 - [ ] More methods for DR
