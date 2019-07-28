@@ -1,5 +1,5 @@
 # dred
-dred = dimension reducing for ml (suit to sklearn)
+dred = dimension reducing (DR) for ml (suit to sklearn)
 
 ## Framework
 
@@ -12,12 +12,13 @@ X -DR-> X' -Regression-> Y' <-DR-> Y
 # X -> R^p, Y -> R^q
 @DimReduce(p, q)
 class cls(RegressorMixin):
-    Definition of cls, in sklearn form
+    # Definition of cls, in sklearn form
 ```
 
 ### Create yourself dim reduction method
 
 Make sure it has transform and inverse_transform method. :caution:
+I've defined two DR methods in the module
 
 ```python
 class SVDTransformer(FunctionTransformer):
