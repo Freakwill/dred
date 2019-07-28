@@ -9,6 +9,7 @@ X -DR-> X' -Regression-> Y' <-DR-> Y
 
 ### Basic usage
 ```python
+# X -> R^p, Y -> R^q
 @DimReduce(p, q)
 class cls(RegressorMixin):
     Definition of cls, in sklearn form
