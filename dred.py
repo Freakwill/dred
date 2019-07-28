@@ -4,39 +4,82 @@
 import types
 import numpy.linalg as LA
 
-def decoxy(m, dr1, args1, dr2, args2):
+def decoxy(m, dr1, dr2):
     def mm(obj, X, y):
-        X, V = dr1(X, *args1)
-        obj.Xdr = X
-        obj.rm1 = V
+        dr1.fit(X)
+        X = dr1.transform(X)
         if dr2:
-            y, W = dr2(y, *args2)
-            obj.ydr = y
-            obj.rm2 = W
-            return m(obj, X, y)
-        else:
-            return m(obj, X, y)
+            dr2.fit(y)
+            y = dr2.transform(y)
+        return m(obj, X, y)
     return mm
 
-def decox(m, flag=False):
+def decox(m, dr1, dr2):
     def mm(obj, X):
-        if flag:
-            X = obj.Xdr
-        else:
-            X = X @ obj.rm1
-        if obj.rm2 is not None:
-            return m(obj, X) @ obj.rm2.T
+        X = dr1.transform(X)
+        if dr2:
+            return dr2.inverse_transform(m(obj, X))
         else:
             return m(obj, X)
     return mm
+
+
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.decomposition import PCA
+
+class SVDTransformer(FunctionTransformer):
+    '''SVD DR transformer
+    '''
+    def __init__(self, p=None, *args, **kwargs):
+        super(SVDTransformer, self).__init__(*args, **kwargs)
+        self.p = p
+
+
+    def fit(self, X):
+        def svd(X, p):
+            V, s, Vh = LA.svd(X.T @ X)
+            Vp = V[:, :p]
+            Cp = X @ Vp
+            return Cp, Vp
+        if self.p:
+            X, V = svd(X, self.p)
+            self.func = lambda X: X @ V
+            self.inverse_func = lambda X: X @ V.T
+
+
+# def decoxy(m, dr1, args1, dr2, args2):
+#     def mm(obj, X, y):
+#         X, V = dr1(X, *args1)
+#         obj.Xdr = X
+#         obj.rm1 = V
+#         if dr2:
+#             y, W = dr2(y, *args2)
+#             obj.ydr = y
+#             obj.rm2 = W
+#             return m(obj, X, y)
+#         else:
+#             return m(obj, X, y)
+#     return mm
+
+# def decox(m, flag=False):
+#     def mm(obj, X):
+#         if flag:
+#             X = obj.Xdr
+#         else:
+#             X = X @ obj.rm1
+#         if obj.rm2 is not None:
+#             return m(obj, X) @ obj.rm2.T
+#         else:
+#             return m(obj, X)
+#     return mm
 
 
 class DimReduce:
     """Decorator for dimension reduce
 
     Usage:
-    @SVDDimReduce(p, q)
-    class cls(egressorMixin):
+    @DimReduce(p, q)
+    class cls(RegressorMixin):
         Definition of cls, in sklearn form
     
     Example:
@@ -63,30 +106,26 @@ class DimReduce:
 
     """
 
-    def __init__(self, dr1, args1, dr2=None, args2=None):
+    def __init__(self, dr1, dr2=None):
         self.dr1 = dr1
-        self.args1 = args1
         self.dr2 = dr2
-        self.args2 = args2
-        self.rm1 = self.rm2 = None
-        self.Xdr = None
 
     def __call__(self, cls):
-        cls.fit = types.MethodType(decoxy(cls.fit, self.dr1, self.args1, self.dr2, self.args2), cls)
+        cls.fit = types.MethodType(decoxy(cls.fit, self.dr1, self.dr2), cls)
         for m in ('transform', 'predict'):
-            setattr(cls, m, types.MethodType(decox(getattr(cls, m)), cls))
+            setattr(cls, m, types.MethodType(decox(getattr(cls, m), self.dr1, self.dr2), cls))
         return cls
 
 
 class SVDDimReduce(DimReduce):
     # SVD for X and y
     def __init__(self, p=3, q=None):
-        def svd(X, p):
-            V, s, Vh = LA.svd(X.T @ X)
-            Vp = V[:, :p]
-            Cp = X @ Vp
-            return Cp, Vp
-        self.dr1 = svd
-        self.dr2 = svd
-        self.args1 = (p,)
-        self.args2 = (q,)
+        self.dr1 = SVDTransformer(p)
+        self.dr2 = SVDTransformer(q)
+
+
+class PCADimReduce(DimReduce):
+    # PCA for X and y
+    def __init__(self, p=3, q=None):
+        self.dr1 = PCA(n_components=p)
+        self.dr2 = PCA(n_components=q)
