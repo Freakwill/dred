@@ -47,33 +47,6 @@ class SVDTransformer(FunctionTransformer):
             self.inverse_func = lambda X: X @ V.T
 
 
-# def decoxy(m, dr1, args1, dr2, args2):
-#     def mm(obj, X, y):
-#         X, V = dr1(X, *args1)
-#         obj.Xdr = X
-#         obj.rm1 = V
-#         if dr2:
-#             y, W = dr2(y, *args2)
-#             obj.ydr = y
-#             obj.rm2 = W
-#             return m(obj, X, y)
-#         else:
-#             return m(obj, X, y)
-#     return mm
-
-# def decox(m, flag=False):
-#     def mm(obj, X):
-#         if flag:
-#             X = obj.Xdr
-#         else:
-#             X = X @ obj.rm1
-#         if obj.rm2 is not None:
-#             return m(obj, X) @ obj.rm2.T
-#         else:
-#             return m(obj, X)
-#     return mm
-
-
 class DimReduce:
     """Decorator for dimension reduce
 
