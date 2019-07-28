@@ -8,6 +8,7 @@ from sklearn.base import RegressorMixin
 from sklearn.model_selection import train_test_split
 
 import dred
+
 def solver(p=30, q=3):
     @dred.SVDDimReduce(p, q)
     class cls(RegressorMixin):

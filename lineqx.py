@@ -6,7 +6,6 @@
 solve the eq, then draw the error curve
 """
 
-import dred
 
 import numpy as np
 import numpy.linalg as LA
@@ -22,10 +21,6 @@ if __name__ == '__main__':
 
     Es1 = []
     Es2 = []
-
-    lm = solver()
-    lm.fit(A, B)
-    B_ = lm.predict(A_test)
 
     V, s, Vh = LA.svd(A.T @ A)
 
