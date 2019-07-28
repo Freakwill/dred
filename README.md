@@ -16,7 +16,7 @@ class cls(RegressorMixin):
 
 ### Create yourself dim reduction method
 
-Make sure it has transform and inverse_transform method. :catuion:
+Make sure it has transform and inverse_transform method. :caution:
 
 ```python
 class SVDTransformer(FunctionTransformer):
