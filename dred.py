@@ -5,6 +5,7 @@ import types
 import numpy.linalg as LA
 
 def decoxy(m, dr1, dr2):
+    # deco for fit method, or other methods defined as f(self, X, y)
     def mm(obj, X, y):
         dr1.fit(X)
         X = dr1.transform(X)
@@ -14,7 +15,16 @@ def decoxy(m, dr1, dr2):
         return m(obj, X, y)
     return mm
 
-def decox(m, dr1, dr2):
+def decox(m, dr1):
+    # == decoxy(m, dr1, None)
+    def mm(obj, X, y):
+        dr1.fit(X)
+        X = dr1.transform(X)
+        return m(obj, X, y)
+    return mm
+
+def decoxy_(m, dr1, dr2):
+    # have called dr1.fit, dr2.fit before calling decoxy_
     def mm(obj, X):
         X = dr1.transform(X)
         if dr2:
@@ -86,7 +96,7 @@ class DimReduce:
     def __call__(self, cls):
         cls.fit = types.MethodType(decoxy(cls.fit, self.dr1, self.dr2), cls)
         for m in ('transform', 'predict'):
-            setattr(cls, m, types.MethodType(decox(getattr(cls, m), self.dr1, self.dr2), cls))
+            setattr(cls, m, types.MethodType(decoxy_(getattr(cls, m), self.dr1, self.dr2), cls))
         return cls
 
 
