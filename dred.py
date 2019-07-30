@@ -111,6 +111,14 @@ class DimReduce:
     def dr2(self):
         return self.__dr2
 
+    @dr1.setter
+    def dr1(self, v):
+        self.__dr1 = v
+
+    @dr2.setter
+    def dr2(self, v):
+        self.__dr2 = v
+
     def __call__(self, cls):
         if self.dr2:
             cls.fit = types.MethodType(dredxy(cls.fit, self.dr1, self.dr2), cls)
