@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""DR method for regression in sklearn
+"""
+
 import types
 import numpy.linalg as LA
 
-def decoxy(m, dr1, dr2):
-    # deco for fit method, or other methods defined as f(self, X, y)
+def dredxy(m, dr1, dr2):
+    # dred for fit method, or other methods defined as f(self, X, y)
     def mm(obj, X, y):
         dr1.fit(X)
         X = dr1.transform(X)
@@ -15,22 +18,29 @@ def decoxy(m, dr1, dr2):
         return m(obj, X, y)
     return mm
 
-def decox(m, dr1):
-    # == decoxy(m, dr1, None)
+def dredx(m, dr1):
+    # == dredxy(m, dr1, None)
     def mm(obj, X, y):
         dr1.fit(X)
         X = dr1.transform(X)
         return m(obj, X, y)
     return mm
 
-def decoxy_(m, dr1, dr2):
-    # have called dr1.fit, dr2.fit before calling decoxy_
+def dredxy_(m, dr1, dr2):
+    # have called dr1.fit, dr2.fit before calling dredxy_
     def mm(obj, X):
         X = dr1.transform(X)
         if dr2:
             return dr2.inverse_transform(m(obj, X))
         else:
             return m(obj, X)
+    return mm
+
+def dredx_(m, dr1):
+    # == dredxy_(m, dr1, dr2)
+    def mm(obj, X):
+        X = dr1.transform(X)
+        return m(obj, X)
     return mm
 
 
@@ -90,25 +100,40 @@ class DimReduce:
     """
 
     def __init__(self, dr1, dr2=None):
-        self.dr1 = dr1
-        self.dr2 = dr2
+        self.__dr1 = dr1
+        self.__dr2 = dr2
+
+    @property
+    def dr1(self):
+        return self.__dr1
+
+    @property
+    def dr2(self):
+        return self.__dr2
 
     def __call__(self, cls):
-        cls.fit = types.MethodType(decoxy(cls.fit, self.dr1, self.dr2), cls)
-        for m in ('transform', 'predict'):
-            setattr(cls, m, types.MethodType(decoxy_(getattr(cls, m), self.dr1, self.dr2), cls))
+        if self.dr2:
+            cls.fit = types.MethodType(dredxy(cls.fit, self.dr1, self.dr2), cls)
+            for m in ('transform', 'predict'):
+                setattr(cls, m, types.MethodType(dredxy_(getattr(cls, m), self.dr1, self.dr2), cls))
+        else:
+            cls.fit = types.MethodType(dredx(cls.fit, self.dr1), cls)
+            for m in ('transform', 'predict'):
+                setattr(cls, m, types.MethodType(dredx_(getattr(cls, m), self.dr1), cls))
         return cls
 
 
 class SVDDimReduce(DimReduce):
     # SVD for X and y
     def __init__(self, p=3, q=None):
-        self.dr1 = SVDTransformer(p)
-        self.dr2 = SVDTransformer(q)
+        dr1 = SVDTransformer(p)
+        dr2 = SVDTransformer(q)
+        super(SVDDimReduce, self).__init__(dr1, dr2)
 
 
 class PCADimReduce(DimReduce):
     # PCA for X and y
     def __init__(self, p=3, q=None):
-        self.dr1 = PCA(n_components=p)
-        self.dr2 = PCA(n_components=q)
+        dr1 = PCA(n_components=p)
+        dr2 = PCA(n_components=q)
+        super(PCADimReduce, self).__init__(dr1, dr2)
