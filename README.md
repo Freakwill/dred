@@ -17,8 +17,6 @@ class cls(RegressorMixin):
 
 ### Create yourself dim reduction method
 
-Make sure it has `transform` and `inverse_transform` method. :caution:
-
 I've defined two DR methods in the module
 
 ```python
@@ -47,17 +45,21 @@ class SVDTransformer(FunctionTransformer):
 class SVDDimReduce(DimReduce):
     # SVD for X and y
     def __init__(self, p=3, q=None):
-        self.dr1 = SVDTransformer(p)
-        self.dr2 = SVDTransformer(q)
+        dr1 = SVDTransformer(p)
+        dr2 = SVDTransformer(q)
+        super(SVDDimReduce, self).__init__(dr1, dr2)
 
 
 class PCADimReduce(DimReduce):
     # PCA for X and y
     def __init__(self, p=3, q=None):
-        self.dr1 = PCA(n_components=p)
-        self.dr2 = PCA(n_components=q)
+        dr1 = PCA(n_components=p)
+        dr2 = PCA(n_components=q)
+        super(PCADimReduce, self).__init__(dr1, dr2)
 
 ```
+
+Make sure dr1 and dr2 has `transform` and `inverse_transform` method. :caution:
 
 ## Example
 see `solver.py`
