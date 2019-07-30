@@ -17,7 +17,8 @@ class cls(RegressorMixin):
 
 ### Create yourself dim reduction method
 
-Make sure it has transform and inverse_transform method. :caution:
+Make sure it has `transform` and `inverse_transform` method. :caution:
+
 I've defined two DR methods in the module
 
 ```python
