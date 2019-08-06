@@ -63,7 +63,10 @@ Make sure dr1 and dr2 has `transform` and `inverse_transform` method. :caution:
 
 ## Example
 see `solver.py`
-run `lineqx.py`
+run `lineqx.py` (demo program)
+
+![](https://github.com/Freakwill/dred/blob/master/demo.png)
+
 
 ## TODO
 - [ ] More methods for DR
