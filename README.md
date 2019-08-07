@@ -1,9 +1,22 @@
 # dred
-dred = dimension reducing (DR) for ml (suit to sklearn)
+dred = dimension reducing (DR) for ML (suit to sklearn)
+
+Currently, only for regression.
 
 ## Framework
 
-X -DR-> X' -Regression-> Y' <-DR-> Y
+`X -DR-> X' -Regression-> Y' <-DR-> Y`
+
+train data X, Y
+test(predict) data Xtest, Ytest
+1. X and Y will be dred-ed
+2. a model will fit X' and Y'
+3. After Xtest is dred-ed, predict the output of Xtest'
+4. Get Y', reconstruct Y from Y'
+5. get error of Y to Ytest
+
+## Requirements
+scikit-learn
 
 ## Usage
 
@@ -70,3 +83,4 @@ run `lineqx.py` (demo program)
 
 ## TODO
 - [ ] More methods for DR
+- [ ] make Classifier
