@@ -1,5 +1,6 @@
 # dred
-![](https://github.com/Freakwill/dred/edit/master/logo.png)
+![](https://github.com/Freakwill/dred/blob/master/logo.png)
+
 dred = dimension reducing (DR) for ML (suit to sklearn)
 
 Currently, only for regression.
