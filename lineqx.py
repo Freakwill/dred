@@ -21,13 +21,7 @@ if __name__ == '__main__':
 
     Es1 = []
     Es2 = []
-
-    V, s, Vh = LA.svd(A.T @ A)
-
-    s /= np.sum(s)
-    ss = np.cumsum(s)
     ps = np.arange(1, 81, 5)
-
     for p in ps:
         s = solver(p)
         s.fit(A, B)
@@ -61,7 +55,11 @@ if __name__ == '__main__':
     ax.annotate('Relative error of predict', color='green', xy=(ps[0], ret), xytext=(ps[0], ret - 0.1), arrowprops={'arrowstyle':'->', 'color':'green'}, fontproperties=myfont)
 
     tax = ax.twinx()
-    tax.plot(ps, ss[:80:5], 'm-.')
+
+    
+    ss = s['X'].sigma
+
+    tax.plot(ps, ss[::5], 'm-.')
     tax.set_ylabel('Accumulative contribution', fontproperties=myfont)
     tax.legend(('Accumulative contribution',), prop=myfont)
  

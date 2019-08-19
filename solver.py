@@ -25,9 +25,6 @@ def solver(p=30, q=3):
         def relerror(self, X, y):
             return relerror(self.predict(X), y)
 
-        def transform(self, X):
-            return X @ self.P
-
         def predict(self, X):
             return X @ self.P
 
@@ -48,16 +45,5 @@ def solver(p=30, q=3):
                 time2 = time.perf_counter()
                 times.append(time2 - time1)
             return np.mean(times)
+
     return cls()
-
-
-if __name__ == '__main__':
-
-
-    from data import *
-    A, A_test, B, B_test = train_test_split(A, B, test_size=0.2)
-    lm = solver()
-    lm.fit(A, B)
-    B_ = lm.predict(A_test)
-    print(lm.relerror(A_test, B_test))
-

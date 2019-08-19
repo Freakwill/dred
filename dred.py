@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """DR method for regression in sklearn
+
+dr1: DR for x data
+dr2: DR for y data
 """
 
 import types
@@ -60,18 +63,20 @@ class SVDTransformer(FunctionTransformer):
             V, s, Vh = LA.svd(X.T @ X)
             Vp = V[:, :p]
             Cp = X @ Vp
-            return Cp, Vp
+            return Cp, Vp, s[:p]
         if self.p:
-            X, V = svd(X, self.p)
+            X, V, s = svd(X, self.p)
             self.func = lambda X: X @ V
             self.inverse_func = lambda X: X @ V.T
+            self.sigma = s.cumsum()
+        return self
 
 
 class DimReduce:
     """Decorator for dimension reduce
 
     Usage:
-    @DimReduce(p, q)
+    @DimReduce(dr1, dr2)
     class cls(RegressorMixin):
         Definition of cls, in sklearn form
     
@@ -123,11 +128,21 @@ class DimReduce:
         if self.dr2:
             cls.fit = types.MethodType(dredxy(cls.fit, self.dr1, self.dr2), cls)
             for m in ('transform', 'predict'):
-                setattr(cls, m, types.MethodType(dredxy_(getattr(cls, m), self.dr1, self.dr2), cls))
+                if hasattr(cls, m):
+                    setattr(cls, m, types.MethodType(dredxy_(getattr(cls, m), self.dr1, self.dr2), cls))
         else:
             cls.fit = types.MethodType(dredx(cls.fit, self.dr1), cls)
             for m in ('transform', 'predict'):
-                setattr(cls, m, types.MethodType(dredx_(getattr(cls, m), self.dr1), cls))
+                if hasattr(cls, m):
+                    setattr(cls, m, types.MethodType(dredx_(getattr(cls, m), self.dr1), cls))
+        def f(obj, k):
+            if k == 'X':
+                return self.dr1
+            elif k == 'Y':
+                return self.dr2
+            else:
+                raise KeyError(f'no such key {k}')
+        cls.__getitem__ = types.MethodType(f, cls)
         return cls
 
 
