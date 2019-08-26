@@ -63,12 +63,13 @@ class SVDTransformer(FunctionTransformer):
             V, s, Vh = LA.svd(X.T @ X)
             Vp = V[:, :p]
             Cp = X @ Vp
-            return Cp, Vp, s[:p]
+            s /= s.sum()
+            return Cp, Vp, s.cumsum()[:p]
         if self.p:
             X, V, s = svd(X, self.p)
             self.func = lambda X: X @ V
             self.inverse_func = lambda X: X @ V.T
-            self.sigma = s.cumsum()
+            self.contribution = s
         return self
 
 
@@ -135,15 +136,34 @@ class DimReduce:
             for m in ('transform', 'predict'):
                 if hasattr(cls, m):
                     setattr(cls, m, types.MethodType(dredx_(getattr(cls, m), self.dr1), cls))
-        def f(obj, k):
-            if k == 'X':
-                return self.dr1
-            elif k == 'Y':
-                return self.dr2
-            else:
-                raise KeyError(f'no such key {k}')
-        cls.__getitem__ = types.MethodType(f, cls)
-        return cls
+
+        class cls_ext(cls):
+            def __getitem__(obj, k):
+                if k == 'X':
+                    return self.dr1
+                elif k == 'Y':
+                    return self.dr2
+                else:
+                    raise KeyError(f'no such key {k}')
+
+            def perf(obj, n=10, *args, **kwargs):
+                """Check the performance by running it several times
+                
+                Arguments:
+                    n {int} -- running times
+                
+                Returns:
+                    number -- mean time
+                """
+                import time
+                times = []
+                for _ in range(n):
+                    time1 = time.perf_counter()
+                    obj.fit(*args, **kwargs)
+                    time2 = time.perf_counter()
+                    times.append(time2 - time1)
+                return np.mean(times)
+        return cls_ext
 
 
 class SVDDimReduce(DimReduce):
@@ -160,3 +180,22 @@ class PCADimReduce(DimReduce):
         dr1 = PCA(n_components=p)
         dr2 = PCA(n_components=q)
         super(PCADimReduce, self).__init__(dr1, dr2)
+
+
+# Regressor
+
+from sklearn.base import RegressorMixin
+def regressor(p, q):
+    @SVDDimReduce(p, q)
+    class cls(RegressorMixin):
+        '''Linear equations
+        XP = y
+        '''
+
+        def fit(self, X, y):
+            self.P = LA.lstsq(X, y, rcond=None)[0]
+
+        def predict(self, X):
+            return X @ self.P
+
+    return cls()

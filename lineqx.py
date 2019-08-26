@@ -10,10 +10,10 @@ solve the eq, then draw the error curve
 import numpy as np
 import numpy.linalg as LA
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
 
-from utils import *
 from data import *
-from solver import *
+import dred
 
 if __name__ == '__main__':
 
@@ -23,11 +23,11 @@ if __name__ == '__main__':
     Es2 = []
     ps = np.arange(1, 81, 5)
     for p in ps:
-        s = solver(p)
+        s = dred.regressor(p, q=3)
         s.fit(A, B)
 
-        E1 = s.relerror(A, B)
-        E2 = s.relerror(A_test, B_test)
+        E1 = s.score(A, B)
+        E2 = s.score(A_test, B_test)
 
         Es1.append(E1)
         Es2.append(E2)
@@ -43,22 +43,19 @@ if __name__ == '__main__':
     #ax.set_title('Number of PCs-error', fontproperties=myfont)
     ax.plot(ps, Es1, '-o', ps, Es2, '-s')
 
-    ax.legend(('Error after DR', 'Predict Error'), prop=myfont)
+    ax.legend(('Score after DR', 'Predict Score'), prop=myfont)
 
-    XX = A @ LA.lstsq(A, B, rcond=None)[0] - B
-    re = error(XX) / error(B)
+    XX = A @ LA.lstsq(A, B, rcond=None)[0]
+    re = r2_score(XX, B)
     ax.plot((ps[0], ps[-1]), [re, re], '--k')
-    ax.annotate('Error of original Equation', xy = (ps[0], re), xytext=(ps[0], re + 0.1), arrowprops={'arrowstyle':'->'}, fontproperties=myfont)
+    ax.annotate('Score of original Equation', xy = (ps[0], re), xytext=(ps[0], re + 0.1), arrowprops={'arrowstyle':'->'}, fontproperties=myfont)
 
-    ret = error(A_test @ LA.lstsq(A_test, B_test, rcond=None)[0], B_test) / error(B_test)
+    ret = r2_score(A_test @ LA.lstsq(A_test, B_test, rcond=None)[0], B_test)
     ax.plot((ps[0], ps[-1]), [ret, ret], '--g')
     ax.annotate('Relative error of predict', color='green', xy=(ps[0], ret), xytext=(ps[0], ret - 0.1), arrowprops={'arrowstyle':'->', 'color':'green'}, fontproperties=myfont)
 
     tax = ax.twinx()
-
-    
-    ss = s['X'].sigma
-
+    ss = s['X'].contribution
     tax.plot(ps, ss[::5], 'm-.')
     tax.set_ylabel('Accumulative contribution', fontproperties=myfont)
     tax.legend(('Accumulative contribution',), prop=myfont)
