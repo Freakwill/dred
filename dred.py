@@ -182,10 +182,10 @@ class PCADimReduce(DimReduce):
         super(PCADimReduce, self).__init__(dr1, dr2)
 
 
-# Regressor
+# Examples of Regressors
 
 from sklearn.base import RegressorMixin
-def regressor(p, q):
+def lstsq(p, q):
     @SVDDimReduce(p, q)
     class cls(RegressorMixin):
         '''Linear equations

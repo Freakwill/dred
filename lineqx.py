@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Error Curve
+"""Error/Score Curve
 
 solve the eq, then draw the error curve
 """
-
 
 import numpy as np
 import numpy.linalg as LA
@@ -23,7 +22,7 @@ if __name__ == '__main__':
     Es2 = []
     ps = np.arange(1, 81, 5)
     for p in ps:
-        s = dred.regressor(p, q=3)
+        s = dred.lstsq(p, q=3)
         s.fit(A, B)
 
         E1 = s.score(A, B)
