@@ -77,7 +77,8 @@ class PCADimReduce(DimReduce):
 Make sure dr1 and dr2 has `transform` and `inverse_transform` method. :caution:
 
 ## Example
-see `solver.py`
+an example `regressor` supplied in `dred.py`
+
 run `lineqx.py` (demo program)
 
 ![](https://github.com/Freakwill/dred/blob/master/demo.png)
